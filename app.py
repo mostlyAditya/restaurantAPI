@@ -15,6 +15,7 @@ mongo = PyMongo(app)
 def welcome():
     return "Welcome to Pizza House"
 
+
 @app.route('/orderR', methods=['POST'])
 def add_order_rabbit_broker():
     _data = request.json
