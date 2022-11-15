@@ -1,9 +1,9 @@
 from flask import Flask,jsonify,request
 from flask_pymongo import PyMongo
-from bson.json_util import loads, dumps
+from bson.json_util import  dumps
 from bson.objectid import ObjectId
 from send import publish
-import json
+
 app = Flask(__name__)
 app.secret_key = "secretkey"
 #app.config['MONGO_dbname'] = 'orders'
@@ -15,6 +15,12 @@ mongo = PyMongo(app)
 def welcome():
     return "Welcome to Pizza House"
 
+@app.route('/orderR', methods=['POST'])
+def add_order_rabbit_broker():
+    _data = request.json
+    _order = _data['order']
+    publish("Order Created",_order)
+    return jsonify({"message": "Order Created"})
 
 
 @app.route('/order', methods = ['POST'])
@@ -30,11 +36,13 @@ def add_order():
     else:
         return jsonify(message="Not Allowed")
 
+
 @app.route('/getorders', methods = ['GET'])
 def get_orders():
     _all_orders = mongo.db.orders.find()
     _all_orders = dumps(_all_orders)
     return _all_orders
+
 
 @app.route('/getorders/<order_id>', methods = ['GET'])
 def get_order(order_id):
@@ -42,5 +50,7 @@ def get_order(order_id):
     if _found_order is None:
         return jsonify(message="Order Not Found")
     return dumps(_found_order)
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=105, debug = True, use_reloader = True)
